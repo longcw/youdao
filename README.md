@@ -1,5 +1,6 @@
 #youdao
-基于Python 在控制台下查单词的小工具，基于有道词典API
+基于Python 在控制台下查单词的小工具，基于有道词典API。
+受<https://github.com/Flowerowl/ici> 启发，用requests 库和有道的API 写一遍练习一下。
 
 ###1.运行效果
 支持中文，句子翻译
