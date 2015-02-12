@@ -1,4 +1,7 @@
 # coding:utf-8
+
+import sys
+import getopt
 import requests
 from termcolor import colored
 
@@ -37,16 +40,16 @@ class youdao:
                     print colored(u'美音:', 'blue'), colored('[%s]' % result['basic']['us-phonetic'], 'green'),
                 if 'uk-phonetic' in result['basic']:
                     print colored(u'英音:', 'blue'), colored('[%s]' % result['basic']['uk-phonetic'], 'green')
-                print colored(u'基本词典:', 'blue', attrs=['bold'])
+                print colored(u'基本词典:', 'blue')
                 for explain in result['basic']['explains']:
                     print '\t' + colored(explain, 'yellow')
 
-            print colored(u'有道翻译:', 'blue', attrs=['bold'])
+            print colored(u'有道翻译:', 'blue')
             for tra in result['translation']:
                 print '\t' + colored(tra, 'cyan')
 
             if 'web' in result:
-                print colored(u'网络释义:', 'blue', attrs=['bold'])
+                print colored(u'网络释义:', 'blue')
                 for item in result['web']:
                     print '\t' + colored(item['key'], 'cyan') + ': ' + '; '.join(item['value'])
 
@@ -59,8 +62,14 @@ class youdao:
 
 
 def main():
+    options, args = getopt.getopt(sys.argv[1:], [])
+
+    if not args:
+        word = raw_input(colored('input a word: ', 'blue'))
+    else:
+        word = ' '.join(args)
     yd = youdao()
-    yd.query('good')
+    yd.query(word)
 
 if __name__ == '__main__':
     main()
