@@ -41,12 +41,10 @@ class youdao:
                 if 'uk-phonetic' in result['basic']:
                     print colored(u'英音:', 'blue'), colored('[%s]' % result['basic']['uk-phonetic'], 'green')
                 print colored(u'基本词典:', 'blue')
-                for explain in result['basic']['explains']:
-                    print '\t' + colored(explain, 'yellow')
+                print colored('\t'+'\n\t'.join(result['basic']['explains']), 'yellow')
 
             print colored(u'有道翻译:', 'blue')
-            for tra in result['translation']:
-                print '\t' + colored(tra, 'cyan')
+            print colored('\t'+'\n\t'.join(result['translation']), 'cyan')
 
             if 'web' in result:
                 print colored(u'网络释义:', 'blue')
