@@ -2,7 +2,7 @@
 
 from setuptools import setup, find_packages
 
-version = '0.1'
+version = '0.1.1'
 
 setup(name='youdao',
       version=version,
@@ -21,7 +21,7 @@ setup(name='youdao',
       ],
       entry_points={
         'console_scripts':[
-            'youdao = youdao.youdao:main'
+            'yd = youdao.youdao:main',
         ]
       },
 )
