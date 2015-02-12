@@ -5,6 +5,7 @@ import getopt
 import requests
 from termcolor import colored
 
+
 class youdao:
     params = {
         'keyfrom': 'longcwang',

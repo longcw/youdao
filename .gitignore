@@ -1,1 +1,4 @@
 .idea
+dist
+build
+youdao.egg-info
