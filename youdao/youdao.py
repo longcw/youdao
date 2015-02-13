@@ -3,6 +3,7 @@
 import sys
 import getopt
 import requests
+from youdao_web import youdao_web
 from termcolor import colored
 
 
@@ -25,11 +26,17 @@ class youdao:
         60: u'无词典结果，仅在获取词典结果生效'
     }
 
-    def get_response(self, word):
-        self.params['q'] = word
-        r = requests.get(self.api_url, params=self.params)
-        r.raise_for_status()    # a 4XX client error or 5XX server error response
-        return r.json()
+    def get_response(self, word, use_api):
+        if use_api:
+            self.params['q'] = word
+            r = requests.get(self.api_url, params=self.params)
+            r.raise_for_status()    # a 4XX client error or 5XX server error response
+            result = r.json()
+        else:
+            yd = youdao_web()
+            result = yd.get_result(word)
+
+        return result
 
     def show(self, result):
         if result['errorCode'] != 0:
@@ -41,34 +48,44 @@ class youdao:
                     print colored(u'美音:', 'blue'), colored('[%s]' % result['basic']['us-phonetic'], 'green'),
                 if 'uk-phonetic' in result['basic']:
                     print colored(u'英音:', 'blue'), colored('[%s]' % result['basic']['uk-phonetic'], 'green')
+                if 'phonetic' in result['basic']:
+                    print colored(u'拼音:', 'blue'), colored('[%s]' % result['basic']['phonetic'], 'green')
+
                 print colored(u'基本词典:', 'blue')
                 print colored('\t'+'\n\t'.join(result['basic']['explains']), 'yellow')
 
-            print colored(u'有道翻译:', 'blue')
-            print colored('\t'+'\n\t'.join(result['translation']), 'cyan')
+            if 'translation' in result:
+                print colored(u'有道翻译:', 'blue')
+                print colored('\t'+'\n\t'.join(result['translation']), 'cyan')
 
             if 'web' in result:
                 print colored(u'网络释义:', 'blue')
                 for item in result['web']:
                     print '\t' + colored(item['key'], 'cyan') + ': ' + '; '.join(item['value'])
 
-    def query(self, word):
+    def query(self, word, use_api=False):
         try:
-            result = self.get_response(word)
+            result = self.get_response(word, use_api)
             self.show(result)
         except requests.HTTPError as e:
             print colored(u'网络错误: %s' % e.message, 'red')
 
 
 def main():
-    options, args = getopt.getopt(sys.argv[1:], [])
+    options, args = getopt.getopt(sys.argv[1:], 'a')
 
-    if not args:
+    use_api = False
+    for opt in options:
+        if opt[0] == '-a':
+            use_api = True
+
+    word = ' '.join(args)
+
+    while not word:
         word = raw_input(colored('input a word: ', 'blue'))
-    else:
-        word = ' '.join(args)
+
     yd = youdao()
-    yd.query(word)
+    yd.query(word, use_api)
 
 if __name__ == '__main__':
     main()
