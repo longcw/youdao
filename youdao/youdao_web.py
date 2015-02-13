@@ -33,8 +33,7 @@ class youdao_web:
             del self.result['basic']
         else:
             trans = basic.find(class_='trans-container')
-            for tran in trans.find_all('li'):
-                self.result['basic']['explains'].append(unicode(tran.string))
+            self.result['basic']['explains'] = [unicode(tran.string) for tran in trans.find_all('li')]
 
             #中文
             if len(self.result['basic']['explains']) == 0:
@@ -44,20 +43,22 @@ class youdao_web:
             #音标
             phons = basic(class_='phonetic', limit=2)
             if len(phons) == 2:
-                self.result['basic']['uk-phonetic'] = unicode(phons[0].string)[1:-1]
-                self.result['basic']['us-phonetic'] = unicode(phons[1].string)[1:-1]
+                self.result['basic']['uk-phonetic'], self.result['basic']['us-phonetic'] = \
+                    [unicode(p.string)[1:-1] for p in phons]
             elif len(phons) == 1:
                 self.result['basic']['phonetic'] = unicode(phons[0].string)[1:-1]
 
             web = root.find(id='webPhrase')
-            for wordgroup in web.find_all(attrs={'class': re.compile(r'^wordGroup$')}, limit=4):
-                item = {
+            self.result['web'] = [
+                {
                     'key': unicode(wordgroup.find(class_='search-js').string).strip(),
-                    'value': []
-                }
-                for v in unicode(wordgroup.find('span').next_sibling).split(';'):
-                    item['value'].append(v.strip())
-                self.result['web'].append(item)
+                    'value': [v.strip() for v in unicode(wordgroup.find('span').next_sibling).split(';')]
+                } for wordgroup in web.find_all(class_='wordGroup', limit=4)
+            ]
+            # for wordgroup in web.find_all(class_='wordGroup', limit=4):
+            #     item = {'key': unicode(wordgroup.find(class_='search-js').string).strip(),
+            #             'value': [v.strip() for v in unicode(wordgroup.find('span').next_sibling).split(';')]}
+            #     self.result['web'].append(item)
 
 
 
