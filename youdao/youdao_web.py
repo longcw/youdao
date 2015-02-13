@@ -8,7 +8,6 @@ from bs4 import BeautifulSoup
 class youdao_web:
     web_url = 'http://dict.youdao.com/search?keyfrom=dict.top&q='
     result = {
-        "translation": [],
         "basic": {
             "explains": []
         },
@@ -54,8 +53,10 @@ class youdao_web:
             for wordgroup in web.find_all(attrs={'class': re.compile(r'^wordGroup$')}, limit=4):
                 item = {
                     'key': unicode(wordgroup.find(class_='search-js').string).strip(),
-                    'value': wordgroup.get_text().strip().split('\n')
+                    'value': []
                 }
+                for v in unicode(wordgroup.find('span').next_sibling).split(';'):
+                    item['value'].append(v.strip())
                 self.result['web'].append(item)
 
 
