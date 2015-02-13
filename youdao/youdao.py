@@ -3,8 +3,10 @@
 import sys
 import getopt
 import requests
-from youdao_web import youdao_web
+import json
 from termcolor import colored
+from youdao_web import youdao_web
+from youdao_db import  youdao_db
 
 
 class youdao:
@@ -63,21 +65,33 @@ class youdao:
                 for item in result['web']:
                     print '\t' + colored(item['key'], 'cyan') + ': ' + '; '.join(item['value'])
 
-    def query(self, word, use_api=False):
+    def query(self, word, use_db=True, use_api=False):
         try:
-            result = self.get_response(word, use_api)
+            db = youdao_db()
+            result = None
+            if use_db:
+                data = db.get_word(word)
+                if data:
+                    result = json.loads(data)
+            if not result:
+                result = self.get_response(word, use_api)
+                db.save_word(word, result)
             self.show(result)
+
         except requests.HTTPError as e:
             print colored(u'网络错误: %s' % e.message, 'red')
 
 
 def main():
-    options, args = getopt.getopt(sys.argv[1:], 'a')
+    options, args = getopt.getopt(sys.argv[1:], 'an')
 
     use_api = False
+    use_db = True
     for opt in options:
         if opt[0] == '-a':
             use_api = True
+        if opt[0] == '-n':
+            use_db = False
 
     word = ' '.join(args)
 
@@ -85,7 +99,7 @@ def main():
         word = raw_input(colored('input a word: ', 'blue'))
 
     yd = youdao()
-    yd.query(word, use_api)
+    yd.query(word, use_db, use_api)
 
 if __name__ == '__main__':
     main()
