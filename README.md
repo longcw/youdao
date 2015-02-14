@@ -6,6 +6,7 @@
 使用Beautifulsoup 库解析网页数据,生成和api类似的dict.
 
 ###更新历史
++ 0.1.3 抓取过的单词使用sqlite保存
 + 0.1.2 增加抓取web版有道词典页面的方法查词, 并默认使用这种方法. 可以通过 -a 选项使用api查词.
 + 0.1.1 改变查词方法为 yd keyword
 + 0.1.0 完成基本功能, 使用命令 youdao keyword 查词.
@@ -13,7 +14,9 @@
 ###1.运行效果
 支持中文，句子翻译
 
-	$ yd keyword
+```bash
+$ yd keyword
+```
 ![截图1](./pic1.png)
 
 	$ yd
