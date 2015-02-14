@@ -81,10 +81,16 @@ class youdao:
         except requests.HTTPError as e:
             print colored(u'网络错误: %s' % e.message, 'red')
 
+    def show_db_list(self):
+        db = youdao_db()
+        words = db.get_all_word()
+        print colored('保存的单词:', 'blue')
+        print colored('\n'.join(words), 'cyan')
+
 
 def main():
-    options, args = getopt.getopt(sys.argv[1:], 'an')
-
+    options, args = getopt.getopt(sys.argv[1:], 'anl')
+    yd = youdao()
     use_api = False
     use_db = True
     for opt in options:
@@ -92,13 +98,16 @@ def main():
             use_api = True
         if opt[0] == '-n':
             use_db = False
+        if opt[0] == '-l':
+            yd.show_db_list()
+            return
 
     word = ' '.join(args)
 
     while not word:
         word = raw_input(colored('input a word: ', 'blue'))
 
-    yd = youdao()
+
     yd.query(word, use_db, use_api)
 
 if __name__ == '__main__':

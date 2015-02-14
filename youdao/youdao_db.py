@@ -43,5 +43,8 @@ class youdao_db:
         except Word.DoesNotExist:
             return None
 
+    def get_all_word(self):
+        return [row.word for row in Word.select(Word.word)]
+
     def __del__(self):
         db.close()
