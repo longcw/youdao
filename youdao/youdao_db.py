@@ -2,8 +2,13 @@
 
 from peewee import *
 import json
+import os
 
-db = SqliteDatabase('youdao.db')
+HOME = os.path.expanduser("~")
+db_dir = HOME + '/.dic_youdao'
+if not os.path.exists(db_dir):
+    os.mkdir(db_dir)
+db = SqliteDatabase(db_dir+'/youdao.db')
 
 
 class BaseModel(Model):

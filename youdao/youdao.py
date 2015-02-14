@@ -94,6 +94,10 @@ def del_word(word):
     db.del_word(word)
 
 
+def show_help():
+    pass
+
+
 def main():
     options, args = getopt.getopt(sys.argv[1:], 'anld:c')
     yd = youdao()
@@ -112,14 +116,12 @@ def main():
             return
         if opt[0] == '-c':
             del_word(None)
-            return 
-
+            return
 
     word = ' '.join(args)
 
     while not word:
         word = raw_input(colored('input a word: ', 'blue'))
-
 
     yd.query(word, use_db, use_api)
 
