@@ -81,15 +81,21 @@ class youdao:
         except requests.HTTPError as e:
             print colored(u'网络错误: %s' % e.message, 'red')
 
-    def show_db_list(self):
-        db = youdao_db()
-        words = db.get_all_word()
-        print colored('保存的单词:', 'blue')
-        print colored('\n'.join(words), 'cyan')
+
+def show_db_list():
+    db = youdao_db()
+    words = db.get_all_word()
+    print colored('保存的单词:', 'blue')
+    print colored('\n'.join(words), 'cyan')
+
+
+def del_word(word):
+    db = youdao_db()
+    db.del_word(word)
 
 
 def main():
-    options, args = getopt.getopt(sys.argv[1:], 'anl')
+    options, args = getopt.getopt(sys.argv[1:], 'anld:c')
     yd = youdao()
     use_api = False
     use_db = True
@@ -99,8 +105,15 @@ def main():
         if opt[0] == '-n':
             use_db = False
         if opt[0] == '-l':
-            yd.show_db_list()
+            show_db_list()
             return
+        if opt[0] == '-d':
+            del_word(opt[1])
+            return
+        if opt[0] == '-c':
+            del_word(None)
+            return 
+
 
     word = ' '.join(args)
 

@@ -46,5 +46,11 @@ class youdao_db:
     def get_all_word(self):
         return [row.word for row in Word.select(Word.word)]
 
+    def del_word(self, word=None):
+        if word:
+            Word.delete().where(Word.word == word).execute()
+        else:
+            Word.delete().execute()
+
     def __del__(self):
         db.close()
