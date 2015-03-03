@@ -14,7 +14,6 @@ class youdao_web:
         "errorCode": 0,
     }
 
-
     def get_result(self, word):
         self.word = word
         r = requests.get(self.web_url + word)
@@ -90,4 +89,4 @@ class youdao_web:
 
 if __name__ == '__main__':
     test = youdao_web()
-    print test.get_result('what the fuck')
+    print test.get_result('application')
