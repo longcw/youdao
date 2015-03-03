@@ -6,7 +6,7 @@ import requests
 import json
 from termcolor import colored
 from youdao_web import youdao_web
-from youdao_db import  youdao_db
+from youdao_db import youdao_db
 
 
 class youdao:
@@ -85,7 +85,7 @@ class youdao:
 def show_db_list():
     db = youdao_db()
     words = db.get_all_word()
-    print colored('保存的单词:', 'blue')
+    print colored(u'保存的单词:', 'blue')
     print colored('\n'.join(words), 'cyan')
 
 
@@ -95,11 +95,29 @@ def del_word(word):
 
 
 def show_help():
-    pass
+    print(u"""
+    控制台下的有道词典 版本0.1.4
+    默认通过解析有道网页版获取查询结果, 没有词典结果时自动使用有道翻译,
+    查询结果会保存到sqlite 数据库中
+    使用方法 yd word [-a] [-n] [-l] [-c] [-d word] [--help]
+    [-a] 使用API 而不是解析网页获取结果
+    [-n] 强制重新获取, 不管数据库中是否已经保存
+    [-l] 列出数据库中保存的所有单词
+    [-c] 清空数据库
+    [-d word] 删除数据库中某个单词
+    [--help] 显示帮助信息
+    """)
 
 
 def main():
-    options, args = getopt.getopt(sys.argv[1:], 'anld:c')
+    try:
+        options, args = getopt.getopt(sys.argv[1:], 'anld:c', ['help'])
+    except getopt.GetoptError:
+        options = [('--help', '')]
+    if ('--help', '') in options:
+        show_help()
+        return
+
     yd = youdao()
     use_api = False
     use_db = True

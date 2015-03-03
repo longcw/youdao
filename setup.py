@@ -17,7 +17,7 @@ setup(name='youdao',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-        'termcolor', 'requests', 'beautifulsoup4'
+        'termcolor', 'requests', 'beautifulsoup4', 'peewee'
       ],
       entry_points={
         'console_scripts':[

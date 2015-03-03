@@ -5,7 +5,7 @@ import json
 import os
 
 HOME = os.path.expanduser("~")
-db_dir = HOME + '/.dic_youdao'
+db_dir = HOME + '/.dict_youdao'
 if not os.path.exists(db_dir):
     os.mkdir(db_dir)
 db = SqliteDatabase(db_dir+'/youdao.db')
@@ -23,7 +23,7 @@ class Word(BaseModel):
 
 class youdao_db:
     def __init__(self):
-        db.create_table(Word, safe=True)
+        db.create_tables([Word], safe=True)
 
     def save_word(self, aword, dict_data):
         wid = self.get_word_id(aword)
