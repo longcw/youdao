@@ -2,4 +2,4 @@
 dist
 build
 youdao.egg-info
-youdao/youdao.db
+*.pyc

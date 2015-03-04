@@ -1,12 +1,15 @@
 # coding:utf-8
 
 import sys
+import os
 import getopt
 import requests
 import json
+import webbrowser
+
 from termcolor import colored
 from youdao_web import youdao_web
-from youdao_db import youdao_db
+from youdao_db import youdao_db, db_dir
 
 
 class youdao:
@@ -19,6 +22,8 @@ class youdao:
         'q': 'query'
     }
     api_url = 'http://fanyi.youdao.com/openapi.do'
+    voice_url = 'http://dict.youdao.com/dictvoice?type=2&audio={word}'
+
     error_code = {
         0: u'正常',
         20: u'要翻译的文本过长',
@@ -27,6 +32,29 @@ class youdao:
         50: u'无效的key',
         60: u'无词典结果，仅在获取词典结果生效'
     }
+
+    def get_voice(self, word):
+        print(colored(u'获取发音中:{word}'.format(word=word), 'green'))
+        voice_dir = os.path.join(db_dir, 'voice')
+        if not os.path.exists(voice_dir):
+            os.mkdir(voice_dir)
+
+        voice_file = os.path.join(voice_dir, word+'.mp3')
+        if not os.path.isfile(voice_file):
+            r = requests.get(self.voice_url.format(word=word))
+            with open(voice_file, 'wb') as f:
+                f.write(r.content)
+        print(colored(u'获取成功,播放中...', 'green'))
+
+        saveout1 = os.dup(1)
+        saveout2 = os.dup(2)
+        os.close(1)
+        os.close(2)
+        try:
+            webbrowser.open(voice_file)
+        finally:
+            os.dup2(saveout1, 1)
+            os.dup2(saveout2, 2)
 
     def get_response(self, word, use_api):
         if use_api:
@@ -65,7 +93,7 @@ class youdao:
                 for item in result['web']:
                     print '\t' + colored(item['key'], 'cyan') + ': ' + '; '.join(item['value'])
 
-    def query(self, word, use_db=True, use_api=False):
+    def query(self, word, use_db=True, use_api=False, play_voice=False):
         try:
             db = youdao_db()
             result = None
@@ -77,6 +105,8 @@ class youdao:
                 result = self.get_response(word, use_api)
                 db.save_word(word, result)
             self.show(result)
+            if play_voice:
+                self.get_voice(word)
 
         except requests.HTTPError as e:
             print colored(u'网络错误: %s' % e.message, 'red')
@@ -111,7 +141,7 @@ def show_help():
 
 def main():
     try:
-        options, args = getopt.getopt(sys.argv[1:], 'anld:c', ['help'])
+        options, args = getopt.getopt(sys.argv[1:], 'anld:cv', ['help'])
     except getopt.GetoptError:
         options = [('--help', '')]
     if ('--help', '') in options:
@@ -121,27 +151,30 @@ def main():
     yd = youdao()
     use_api = False
     use_db = True
+    play_voice = False
     for opt in options:
         if opt[0] == '-a':
             use_api = True
-        if opt[0] == '-n':
+        elif opt[0] == '-n':
             use_db = False
-        if opt[0] == '-l':
+        elif opt[0] == '-l':
             show_db_list()
             return
-        if opt[0] == '-d':
+        elif opt[0] == '-d':
             del_word(opt[1])
             return
-        if opt[0] == '-c':
+        elif opt[0] == '-c':
             del_word(None)
             return
+        elif opt[0] == '-v':
+            play_voice = True
 
     word = ' '.join(args)
 
     while not word:
         word = raw_input(colored('input a word: ', 'blue'))
 
-    yd.query(word, use_db, use_api)
+    yd.query(word, use_db, use_api, play_voice)
 
 if __name__ == '__main__':
     main()

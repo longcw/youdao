@@ -5,10 +5,10 @@ import json
 import os
 
 HOME = os.path.expanduser("~")
-db_dir = HOME + '/.dict_youdao'
+db_dir = os.path.join(HOME, '.dict_youdao')
 if not os.path.exists(db_dir):
     os.mkdir(db_dir)
-db = SqliteDatabase(db_dir+'/youdao.db')
+db = SqliteDatabase(os.path.join(db_dir, 'youdao.db'))
 
 
 class BaseModel(Model):

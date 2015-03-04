@@ -2,12 +2,12 @@
 
 from setuptools import setup, find_packages
 
-version = '0.1.4'
+version = '0.1.5'
 
 setup(name='youdao',
       version=version,
-      description="基于有道API和有道词典web版的在terminal查询词的小工具",
-      long_description="""基于有道API和有道词典web版的在terminal查询词的小工具,抓取web版后使用beautifulsoup解析""",
+      description="基于有道API和有道词典web版的在terminal查询词的小工具,支持单词发音",
+      long_description=open('README.md').read(),
       keywords='python youdao dictionary terminal',
       author='longcw',
       author_email='longchsin@foxmail.com',
@@ -17,11 +17,11 @@ setup(name='youdao',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-        'termcolor', 'requests', 'beautifulsoup4', 'peewee'
+          'termcolor', 'requests', 'beautifulsoup4', 'peewee'
       ],
       entry_points={
-        'console_scripts':[
-            'yd = youdao.youdao:main',
-        ]
+          'console_scripts': [
+              'yd = youdao.youdao:main',
+          ]
       },
 )
