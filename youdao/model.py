@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import json
 import datetime
 from peewee import *
 from config import DB_DIR
@@ -39,6 +38,3 @@ class Word(BaseModel):
             return word
         except cls.DoesNotExist:
             return None
-
-
-db.create_tables([Word], safe=True)

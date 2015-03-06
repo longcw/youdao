@@ -4,7 +4,8 @@ import os
 import errno
 import pickle
 
-VERSION = '0.2.1'
+
+VERSION = '0.2.2'
 HOME = os.path.expanduser("~")
 BASE_DIR = os.path.join(HOME, '.dict_youdao')   # 用户数据根目录
 VOICE_DIR = os.path.join(BASE_DIR, 'voice')     # 音频文件
@@ -19,7 +20,10 @@ def update(config):
     # 从0.2.0开始更改了数据库
     # 重新设置数据库
     if config.get('version', '0') < '0.2.0':
-        silent_remove(DB_DIR)
+        # silent_remove(DB_DIR)
+        from model import db, Word
+        db.drop_table(Word, fail_silently=True)
+        Word.create_table()
 
 
 def silent_remove(filename):
