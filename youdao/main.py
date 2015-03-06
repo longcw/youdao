@@ -37,7 +37,7 @@ def query(keyword, use_db=True, use_api=False, play_voice=False):
 def show_db_list():
     print colored(u'保存在数据库中的单词及查询次数:', 'blue')
     for word in Word.select():
-        print(colored(word.keyword, 'cyan'), colored(str(word.count), 'green'))
+        print colored(word.keyword, 'cyan'), colored(str(word.count), 'green')
 
 
 def del_word(keyword):

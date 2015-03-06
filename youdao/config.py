@@ -4,7 +4,7 @@ import os
 import errno
 import pickle
 
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 HOME = os.path.expanduser("~")
 BASE_DIR = os.path.join(HOME, '.dict_youdao')   # 用户数据根目录
 VOICE_DIR = os.path.join(BASE_DIR, 'voice')     # 音频文件
@@ -15,10 +15,11 @@ DB_DIR = os.path.join(BASE_DIR, DATABASE)
 PK_DIR = os.path.join(BASE_DIR, PK_FILE)
 
 
-def update():
+def update(config):
     # 从0.2.0开始更改了数据库
     # 重新设置数据库
-    silent_remove(DB_DIR)
+    if config.get('version', '0') < '0.2.0':
+        silent_remove(DB_DIR)
 
 
 def silent_remove(filename):
@@ -40,8 +41,8 @@ def prepare():
         with open(PK_DIR, 'rb') as f:
             config = pickle.load(f)
     # update
-    if config.get('version', '0') < '0.2.0':
-        update()
+    update(config)
+    if config.get('version', '0') < VERSION:
         with open(PK_DIR, 'wb') as f:
             config['version'] = VERSION
             pickle.dump(config, f)
