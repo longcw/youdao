@@ -3,6 +3,7 @@
 import os
 import errno
 import pickle
+from peewee import SqliteDatabase
 
 
 VERSION = '0.2.2'
