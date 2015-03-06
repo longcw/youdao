@@ -39,6 +39,3 @@ class Word(BaseModel):
             return word
         except cls.DoesNotExist:
             return None
-
-
-db.create_tables([Word], safe=True)
