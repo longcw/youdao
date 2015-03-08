@@ -101,7 +101,7 @@ def main():
         elif opt[0] == '-v':
             play_voice = True
 
-    keyword = ' '.join(args)
+    keyword = unicode(' '.join(args), encoding=sys.getfilesystemencoding())
 
     # 播放上一个单词的声音
     if play_voice and not keyword:
