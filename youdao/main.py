@@ -6,32 +6,79 @@ import shutil
 import getopt
 import requests
 import json
+import webbrowser
 from termcolor import colored
 from spider import YoudaoSpider
 from model import Word
 import config
 
 
+def show_result(result):
+    """
+    展示查询结果
+    :param result: 与有道API返回的json 数据结构一致的dict
+    """
+    if result['errorCode'] != 0:
+        print colored(YoudaoSpider.error_code[result['errorCode']], 'red')
+    else:
+        print colored('[%s]' % result['query'], 'magenta')
+        if 'basic' in result:
+            if 'us-phonetic' in result['basic']:
+                print colored(u'美音:', 'blue'), colored('[%s]' % result['basic']['us-phonetic'], 'green'),
+            if 'uk-phonetic' in result['basic']:
+                print colored(u'英音:', 'blue'), colored('[%s]' % result['basic']['uk-phonetic'], 'green')
+            if 'phonetic' in result['basic']:
+                print colored(u'拼音:', 'blue'), colored('[%s]' % result['basic']['phonetic'], 'green')
+
+            print colored(u'基本词典:', 'blue')
+            print colored('\t'+'\n\t'.join(result['basic']['explains']), 'yellow')
+
+        if 'translation' in result:
+            print colored(u'有道翻译:', 'blue')
+            print colored('\t'+'\n\t'.join(result['translation']), 'cyan')
+
+        if 'web' in result:
+            print colored(u'网络释义:', 'blue')
+            for item in result['web']:
+                print '\t' + colored(item['key'], 'cyan') + ': ' + '; '.join(item['value'])
+
+
+def play(voice_file):
+    out1 = os.dup(1)
+    out2 = os.dup(2)
+    os.close(1)
+    os.close(2)
+    try:
+        webbrowser.open(voice_file)
+    finally:
+        os.dup2(out1, 1)
+        os.dup2(out2, 2)
+
+
 def query(keyword, use_db=True, use_api=False, play_voice=False):
     word = Word.get_word(keyword)
     if use_db and word:
-        YoudaoSpider.show_result(json.loads(word.json_data))
+        show_result(json.loads(word.json_data))
     else:
         if not word:
             word = Word()
         spider = YoudaoSpider(keyword)
         try:
             result = spider.get_result(use_api)
-            spider.show_result()
-            word.keyword = keyword
-            word.json_data = json.dumps(result)
-            word.save()
         except requests.HTTPError, e:
             print colored(u'网络错误: %s' % e.message, 'red')
             sys.exit()
+        else:
+            show_result(result)
+            word.keyword = keyword
+            word.json_data = json.dumps(result)
+            word.save()
 
     if play_voice:
-        YoudaoSpider.get_voice(keyword)
+        print(colored(u'获取发音:{word}'.format(word=keyword), 'green'))
+        voice_file = YoudaoSpider.get_voice(keyword)
+        print(colored(u'获取成功,播放中...', 'green'))
+        play(voice_file)
 
 
 def show_db_list():
@@ -101,7 +148,7 @@ def main():
         elif opt[0] == '-v':
             play_voice = True
 
-    keyword = ' '.join(args)
+    keyword = unicode(' '.join(args), encoding=sys.getfilesystemencoding())
 
     # 播放上一个单词的声音
     if play_voice and not keyword:

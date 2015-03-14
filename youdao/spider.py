@@ -23,10 +23,10 @@ class YoudaoSpider:
         'version': '1.1',
         'q': 'query'
     }
-    api_url = 'http://fanyi.youdao.com/openapi.do'
-    voice_url = 'http://dict.youdao.com/dictvoice?type=2&audio={word}'
-    web_url = 'http://dict.youdao.com/search?keyfrom=dict.top&q='
-    translation_url = 'http://fanyi.youdao.com/translate?keyfrom=dict.top&i='
+    api_url = u'http://fanyi.youdao.com/openapi.do'
+    voice_url = u'http://dict.youdao.com/dictvoice?type=2&audio={word}'
+    web_url = u'http://dict.youdao.com/search?keyfrom=dict.top&q='
+    translation_url = u'http://fanyi.youdao.com/translate?keyfrom=dict.top&i='
 
     error_code = {
         0: u'正常',
@@ -45,38 +45,6 @@ class YoudaoSpider:
     def __init__(self, word):
         self.word = word
 
-    @classmethod
-    def show_result(cls, result=None):
-        """
-        展示查询结果
-        :param result: 与有道API返回的json 数据结构一致的dict
-        """
-        if not result:
-            result = cls.result
-        if result['errorCode'] != 0:
-            print colored(cls.error_code[result['errorCode']], 'red')
-        else:
-            print colored('[%s]' % result['query'], 'magenta')
-            if 'basic' in result:
-                if 'us-phonetic' in result['basic']:
-                    print colored(u'美音:', 'blue'), colored('[%s]' % result['basic']['us-phonetic'], 'green'),
-                if 'uk-phonetic' in result['basic']:
-                    print colored(u'英音:', 'blue'), colored('[%s]' % result['basic']['uk-phonetic'], 'green')
-                if 'phonetic' in result['basic']:
-                    print colored(u'拼音:', 'blue'), colored('[%s]' % result['basic']['phonetic'], 'green')
-
-                print colored(u'基本词典:', 'blue')
-                print colored('\t'+'\n\t'.join(result['basic']['explains']), 'yellow')
-
-            if 'translation' in result:
-                print colored(u'有道翻译:', 'blue')
-                print colored('\t'+'\n\t'.join(result['translation']), 'cyan')
-
-            if 'web' in result:
-                print colored(u'网络释义:', 'blue')
-                for item in result['web']:
-                    print '\t' + colored(item['key'], 'cyan') + ': ' + '; '.join(item['value'])
-
     def get_result(self, use_api=False):
         """
         获取查询结果
@@ -91,10 +59,10 @@ class YoudaoSpider:
         else:
             r = requests.get(self.web_url + self.word)
             r.raise_for_status()
-            self.parse(r.text)
+            self.parse_html(r.text)
         return self.result
 
-    def parse(self, html):
+    def parse_html(self, html):
         """
         解析web版有道的网页
         :param html:网页内容
@@ -161,24 +129,14 @@ class YoudaoSpider:
 
     @classmethod
     def get_voice(cls, word):
-        print(colored(u'获取发音:{word}'.format(word=word), 'green'))
-
         voice_file = os.path.join(VOICE_DIR, word+'.mp3')
         if not os.path.isfile(voice_file):
             r = requests.get(cls.voice_url.format(word=word))
             with open(voice_file, 'wb') as f:
                 f.write(r.content)
-        print(colored(u'获取成功,播放中...', 'green'))
+        return voice_file
 
-        saveout1 = os.dup(1)
-        saveout2 = os.dup(2)
-        os.close(1)
-        os.close(2)
-        try:
-            webbrowser.open(voice_file)
-        finally:
-            os.dup2(saveout1, 1)
-            os.dup2(saveout2, 2)
+
 
 
 if __name__ == '__main__':
