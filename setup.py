@@ -28,5 +28,5 @@ setup(name='youdao',
               'yd = youdao.main:main',
           ]
       },
-      ext_modules=[Extension('CPyStarDictIndex', sources=['youdao/lib/CPyStarDictIndex.c'])]
+      ext_modules=[Extension('CPyStarDictIndex', sources=['youdao/lib/CPyStarDictIndex.cpp'])]
 )

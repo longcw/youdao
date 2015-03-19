@@ -149,7 +149,9 @@ class _StarDictIdx(object):
         
         @note: here may be placed flexible search realization
         """
-        return CPyStarDictIndex.getIndex(word, self.idx_offset_bytes_size, self.idx_filename)[1:]
+        idx = CPyStarDictIndex.getIndex(word, self.idx_offset_bytes_size, self.idx_filename)
+        import socket
+        return socket.htonl(idx[1], idx[2])
     
     def __contains__(self, k):
         """

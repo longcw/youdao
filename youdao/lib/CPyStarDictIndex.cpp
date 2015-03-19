@@ -2,8 +2,18 @@
 // Created by chenlong on 15-3-19.
 //
 
+#ifdef _MSC_VER
+
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef __int64 int64_t;
+typedef unsigned __int64 uint64_t;
+
+#else
+#include <stdint.h>
+#endif
+
 #include "Python.h"
-#include <arpa/inet.h>
 
 static PyObject *getIndex(PyObject *self, PyObject *args) {
     char *idx;
@@ -31,16 +41,13 @@ static PyObject *getIndex(PyObject *self, PyObject *args) {
 
             // matched
             if(strcmp(name, word) == 0) {
-                // correct byte order
-                offset = htonl(offset);
-                length = htonl(length);
 
                 fclose(fp);
                 return Py_BuildValue("sLL", name, offset, length);
             }
 
             // re-initialize
-            bzero(name, sizeof(name));
+            memset(name, 0, sizeof(name));
             name_ix = 0;
         }
     }
