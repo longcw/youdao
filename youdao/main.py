@@ -7,6 +7,7 @@ import getopt
 import requests
 import json
 import webbrowser
+import random
 from termcolor import colored
 from spider import YoudaoSpider
 from model import Word
@@ -105,15 +106,18 @@ def del_word(keyword):
 def show_help():
     print(u"""
     控制台下的有道词典 版本{ver}
+    新增对StarDict 的支持，默认优先使用StarDict
     默认通过解析有道网页版获取查询结果, 没有词典结果时自动使用有道翻译,
     查询结果会保存到sqlite 数据库中
-    使用方法 yd word [-a] [-n] [-l] [-c] [-v] [-d word] [--help]
+    使用方法 yd word [-a] [-n] [-l] [-c] [-v] [-d word] [-y] [-s path] [--help]
     [-a] 使用API 而不是解析网页获取结果
     [-n] 强制重新获取, 不管数据库中是否已经保存
     [-l] 列出数据库中保存的所有单词
     [-c] 清空数据库
     [-v] 获取单词发音, 单独使用 yd -v 可以获取上一个查询单词的发音
     [-d word] 删除数据库中某个单词
+    [-y] 优先使用stardict词典
+    [-s path] 设置stardict词典路径
     [--help] 显示帮助信息
     """.format(ver=config.VERSION))
 
@@ -121,7 +125,7 @@ def show_help():
 def main():
     config.prepare()
     try:
-        options, args = getopt.getopt(sys.argv[1:], 'anld:cv', ['help'])
+        options, args = getopt.getopt(sys.argv[1:], 'anld:cvs:y', ['help'])
     except getopt.GetoptError:
         options = [('--help', '')]
     if ('--help', '') in options:
@@ -131,6 +135,7 @@ def main():
     use_api = False
     use_db = True
     play_voice = False
+    use_dict = True
     for opt in options:
         if opt[0] == '-a':
             use_api = True
@@ -138,15 +143,21 @@ def main():
             use_db = False
         elif opt[0] == '-l':
             show_db_list()
-            return
+            sys.exit()
         elif opt[0] == '-d':
             del_word(opt[1])
-            return
+            sys.exit()
         elif opt[0] == '-c':
             del_word(None)
-            return
+            sys.exit()
         elif opt[0] == '-v':
             play_voice = True
+        elif opt[0] == '-s':
+            print u'stardict 路径设置成功：', opt[1]
+            config.set_dict_path(opt[1])
+            sys.exit()
+        elif opt[0] == '-y':
+            use_dict = False
 
     keyword = unicode(' '.join(args), encoding=sys.getfilesystemencoding())
 
@@ -159,7 +170,27 @@ def main():
         while not keyword:
             keyword = raw_input(colored('input a word: ', 'blue'))
 
-        query(keyword, use_db, use_api, play_voice)
+        # 查询词典
+        stardict_match = False
+        if use_dict and config.config.get('stardict'):
+            colors = ['yellow', 'blue', 'cyan']
+            from lib.cpystardict import Dictionary
+            stardict_base = config.config.get('stardict')
+            for dic_dir in os.listdir(stardict_base):
+                dic_file = os.listdir(os.path.join(stardict_base, dic_dir))[0]
+                name, ext = os.path.splitext(dic_file)
+                name = name.split('.')[0]
+                dic = Dictionary(os.path.join(stardict_base, dic_dir, name))
+                dic_exp = dic[keyword]
+                if dic_exp:
+                    print colored(u"[{dic}]:{word}".format(dic=name, word=keyword), 'green')
+                    color = colors[random.randint(0, len(colors)-1)]
+                    print colored(dic_exp, color)
+                    print colored('========================', 'magenta')
+                    stardict_match = True
+
+        if not stardict_match:
+            query(keyword, use_db, use_api, play_voice)
 
 if __name__ == '__main__':
     main()
