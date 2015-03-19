@@ -1,6 +1,6 @@
 # coding:utf-8
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 from youdao.config import VERSION
 
 setup(name='youdao',
@@ -28,4 +28,5 @@ setup(name='youdao',
               'yd = youdao.main:main',
           ]
       },
+      ext_modules=[Extension('CPyStarDictIndex', sources=['youdao/lib/CPyStarDictIndex.c'])]
 )

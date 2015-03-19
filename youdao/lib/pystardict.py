@@ -25,6 +25,8 @@ import re
 import warnings
 from struct import unpack
 
+import CPyStarDictIndex
+
 class _StarDictIfo(object):
     """
     The .ifo file has the following format:
@@ -137,41 +139,9 @@ class _StarDictIdx(object):
     def __init__(self, dict_prefix, container):
         self._container = container
 
-        idx_filename = '%s.idx' % dict_prefix
-        idx_filename_gz = '%s.gz' % idx_filename
-        
-        try:
-            file = open_file(idx_filename, idx_filename_gz)
-        except:
-            raise Exception('.idx file does not exists')
-        
-        """ check file size """
-        self._file = file.read()
-        if file.tell() != container.ifo.idxfilesize:
-            raise Exception('size of the .idx file is incorrect')
-        file.close()
-        
-        """ prepare main dict and parsing parameters """
-        self._idx = {}
-        idx_offset_bytes_size = int(container.ifo.idxoffsetbits / 8)
-        idx_offset_format = {4: 'L', 8: 'Q',}[idx_offset_bytes_size]
-        idx_cords_bytes_size = idx_offset_bytes_size + 4
-        
-        """ parse data via regex """
-        record_pattern = r'([\d\D]+?\x00[\d\D]{%s})' % idx_cords_bytes_size
-        matched_records = re.findall(record_pattern, self._file)
-        
-        """ check records count """
-        if len(matched_records) != container.ifo.wordcount:
-            raise Exception('words count is incorrect')
-        
-        """ unpack parsed records """
-        for matched_record in matched_records:
-            c = matched_record.find('\x00') + 1
-            record_tuple = unpack('!%sc%sL' % (c, idx_offset_format),
-                matched_record)
-            word, cords = record_tuple[:c-1], record_tuple[c:]
-            self._idx[word] = cords        
+        self.idx_filename = '%s.idx' % dict_prefix
+
+        self.idx_offset_bytes_size = int(container.ifo.idxoffsetbits / 8)
     
     def __getitem__(self, word):
         """
@@ -179,25 +149,26 @@ class _StarDictIdx(object):
         
         @note: here may be placed flexible search realization
         """
-        return self._idx[tuple(word)]
+        return CPyStarDictIndex.getIndex(word, self.idx_offset_bytes_size, self.idx_filename)[1:]
     
     def __contains__(self, k):
         """
         returns True if index has a word k, else False
         """
-        return tuple(k) in self._idx
+        idx = self.__getitem__(k)
+        return idx[1] != 0
     
     def __eq__(self, y):
         """
-        returns True if hashlib.md5(x.idx) is equal to hashlib.md5(y.idx), else False
+        :raises NotImplementedError
         """
-        return hashlib.md5(self._file).hexdigest() == hashlib.md5(y._file).hexdigest()
+        raise NotImplementedError()
     
     def __ne__(self, y):
         """
-        returns True if hashlib.md5(x.idx) is not equal to hashlib.md5(y.idx), else False
+        :raises NotImplementedError
         """
-        return not self.__eq__(y)
+        raise NotImplementedError()
 
     def iterkeys(self):
         """
@@ -575,27 +546,11 @@ class Dictionary(dict):
         for key in self.iterkeys():
             yield (key, self[key])
     
-    def iterkeys(self):
-        """
-        returns iterkeys
-        """
-        if not self.in_memory:
-            warnings.warn('Iter dict items with in_memory=False may cause serious performance problem')
-        return self.idx.iterkeys()
-    
     def itervalues(self):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
-    def keys(self):
-        """
-        returns keys
-        """
-        if not self.in_memory:
-            warnings.warn('Iter dict items with in_memory=False may cause serious performance problem')
-        return self.idx.keys()
     
     def pop(self, k, d):
         """
@@ -633,6 +588,7 @@ class Dictionary(dict):
         """
         raise NotImplementedError()
 
+
 def open_file(regular, gz):
     """
     Open regular file if it exists, gz file otherwise.
@@ -645,3 +601,12 @@ def open_file(regular, gz):
             return gzip.open(gz, 'rb')
         except IOError:
             raise ValueError('Neither regular nor gz file exists')
+
+
+def main():
+    import os
+    dic = Dictionary(os.path.join('/home/chenlong/goldendic/stardict-langdao-ec-gb-2.4.2', 'langdao-ec-gb'))
+    print dic['test']
+
+if __name__ == '__main__':
+    main()
