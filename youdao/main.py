@@ -8,6 +8,7 @@ import requests
 import json
 import webbrowser
 import random
+from collections import deque
 from termcolor import colored
 from spider import YoudaoSpider
 from model import Word
@@ -19,6 +20,11 @@ def show_result(result):
     展示查询结果
     :param result: 与有道API返回的json 数据结构一致的dict
     """
+    if 'stardict' in result:
+        print colored(u'StarDict:', 'blue')
+        print result['stardict']
+        return
+
     if result['errorCode'] != 0:
         print colored(YoudaoSpider.error_code[result['errorCode']], 'red')
     else:
@@ -56,25 +62,56 @@ def play(voice_file):
         os.dup2(out2, 2)
 
 
-def query(keyword, use_db=True, use_api=False, play_voice=False):
+def query(keyword, use_db=True, use_api=False, play_voice=False, use_dict=True):
+    update_word = [True]
     word = Word.get_word(keyword)
+    result = {'query': keyword, 'errorCode': 60}
     if use_db and word:
-        show_result(json.loads(word.json_data))
-    else:
-        if not word:
-            word = Word()
-        spider = YoudaoSpider(keyword)
-        try:
-            result = spider.get_result(use_api)
-        except requests.HTTPError, e:
-            print colored(u'网络错误: %s' % e.message, 'red')
-            sys.exit()
-        else:
-            show_result(result)
-            word.keyword = keyword
-            word.json_data = json.dumps(result)
-            word.save()
+        result.update(json.loads(word.json_data))
+        update_word[0] = False
+    elif update_word[0]:
+        # 从starditc中查找
+        if use_dict and config.config.get('stardict'):
+            try:
+                from lib.cpystardict import Dictionary
+            except ImportError:
+                from lib.pystardict import Dictionary
+            colors = deque(['cyan', 'yellow', 'blue'])
+            stardict_base = config.config.get('stardict')
+            stardict_trans = []
+            for dic_dir in os.listdir(stardict_base):
+                dic_file = os.listdir(os.path.join(stardict_base, dic_dir))[0]
+                name, ext = os.path.splitext(dic_file)
+                name = name.split('.')[0]
+                dic = Dictionary(os.path.join(stardict_base, dic_dir, name))
+                dic_exp = dic[keyword]
+                dic_exp = unicode(dic_exp.decode('utf-8'))
+                if dic_exp:
+                    stardict_trans.append(colored(u"[{dic}]:{word}".format(dic=name, word=keyword), 'green'))
+                    color = colors.popleft()
+                    colors.append(color)
+                    stardict_trans.append(colored(dic_exp, color))
+                    stardict_trans.append(colored(u'========================', 'magenta'))
+            if stardict_trans:
+                result['stardict'] = u'\n'.join(stardict_trans)
+                result['errorCode'] = 0
 
+        # 从stardict中没有匹配单词
+        if not result['errorCode'] == 0:
+            spider = YoudaoSpider(keyword)
+            try:
+                result.update(spider.get_result(use_api))
+            except requests.HTTPError, e:
+                print colored(u'网络错误: %s' % e.message, 'red')
+                sys.exit()
+
+        # 更新数据库
+        new_word = word if word else Word()
+        new_word.keyword = keyword
+        new_word.json_data = json.dumps(result)
+        new_word.save()
+
+    show_result(result)
     if play_voice:
         print(colored(u'获取发音:{word}'.format(word=keyword), 'green'))
         voice_file = YoudaoSpider.get_voice(keyword)
@@ -109,7 +146,7 @@ def show_help():
     新增对StarDict 的支持，默认优先使用StarDict
     默认通过解析有道网页版获取查询结果, 没有词典结果时自动使用有道翻译,
     查询结果会保存到sqlite 数据库中
-    使用方法 yd word [-a] [-n] [-l] [-c] [-v] [-d word] [-y] [-s path] [--help]
+    使用方法 yd [-a] [-n] [-l] [-c] [-v] [-d word] [-y] [-s path] [--help] word
     [-a] 使用API 而不是解析网页获取结果
     [-n] 强制重新获取, 不管数据库中是否已经保存
     [-l] 列出数据库中保存的所有单词
@@ -161,36 +198,15 @@ def main():
 
     keyword = unicode(' '.join(args), encoding=sys.getfilesystemencoding())
 
-    # 播放上一个单词的声音
-    if play_voice and not keyword:
-        word = Word.get_last_word()
-        keyword = word.keyword
-        query(keyword, play_voice=True, use_db=True)
+    if not keyword:
+        if play_voice:
+            word = Word.get_last_word()
+            keyword = word.keyword
+            query(keyword, play_voice=True, use_db=True)
+        else:
+            show_help()
     else:
-        while not keyword:
-            keyword = raw_input(colored('input a word: ', 'blue'))
-
-        # 查询词典
-        stardict_match = False
-        if use_dict and config.config.get('stardict'):
-            colors = ['yellow', 'blue', 'cyan']
-            from lib.cpystardict import Dictionary
-            stardict_base = config.config.get('stardict')
-            for dic_dir in os.listdir(stardict_base):
-                dic_file = os.listdir(os.path.join(stardict_base, dic_dir))[0]
-                name, ext = os.path.splitext(dic_file)
-                name = name.split('.')[0]
-                dic = Dictionary(os.path.join(stardict_base, dic_dir, name))
-                dic_exp = dic[keyword]
-                if dic_exp:
-                    print colored(u"[{dic}]:{word}".format(dic=name, word=keyword), 'green')
-                    color = colors[random.randint(0, len(colors)-1)]
-                    print colored(dic_exp, color)
-                    print colored('========================', 'magenta')
-                    stardict_match = True
-
-        if not stardict_match:
-            query(keyword, use_db, use_api, play_voice)
+        query(keyword, use_db, use_api, play_voice, use_dict)
 
 if __name__ == '__main__':
     main()

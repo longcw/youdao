@@ -149,8 +149,11 @@ class _StarDictIdx(object):
         """
         word = word.encode("utf-8")
         idx = CPyStarDictIndex.getIndex(word, self.idx_offset_bytes_size, self.idx_filename)
-        import socket
-        return socket.htonl(idx[1]), socket.htonl(idx[2])
+        if idx[2]:
+            import socket
+            return socket.htonl(idx[1]), socket.htonl(idx[2])
+        else:
+            return 0, 0
     
     def __contains__(self, k):
         """

@@ -52,7 +52,7 @@ static PyObject *getIndex(PyObject *self, PyObject *args) {
         }
     }
     fclose(fp);
-    return Py_BuildValue("sLL", word, 0, 0);
+    return Py_BuildValue("sss", word, NULL, NULL);
 }
 
 static PyMethodDef pycFuncs[] = {
