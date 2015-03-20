@@ -27,7 +27,8 @@ static PyObject *getIndex(PyObject *self, PyObject *args) {
 
     char name[512];
     int name_ix = 0;
-    uint64_t offset, length;
+    uint64_t offset;
+    uint32_t length;
     int c;
     while ((c = fgetc(fp)) != EOF) {
         if (c != 0) {
@@ -60,6 +61,6 @@ static PyMethodDef pycFuncs[] = {
         {NULL}
 };
 
-void initCPyStarDictIndex(void) {
+extern "C" void initCPyStarDictIndex(void) {
     Py_InitModule("CPyStarDictIndex", pycFuncs);
 }

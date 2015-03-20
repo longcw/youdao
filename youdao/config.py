@@ -6,7 +6,7 @@ import cPickle
 from peewee import SqliteDatabase
 
 
-VERSION = '0.2.4'
+VERSION = '0.3.0'
 HOME = os.path.expanduser("~")
 BASE_DIR = os.path.join(HOME, '.dict_youdao')   # 用户数据根目录
 VOICE_DIR = os.path.join(BASE_DIR, 'voice')     # 音频文件

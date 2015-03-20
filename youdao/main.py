@@ -84,9 +84,12 @@ def query(keyword, use_db=True, use_api=False, play_voice=False, use_dict=True):
                 name, ext = os.path.splitext(dic_file)
                 name = name.split('.')[0]
                 dic = Dictionary(os.path.join(stardict_base, dic_dir, name))
-                dic_exp = dic[keyword]
-                dic_exp = unicode(dic_exp.decode('utf-8'))
-                if dic_exp:
+                try:
+                    dic_exp = dic[keyword.encode("utf-8")]
+                except KeyError:
+                    pass
+                else:
+                    dic_exp = unicode(dic_exp.decode('utf-8'))
                     stardict_trans.append(colored(u"[{dic}]:{word}".format(dic=name, word=keyword), 'green'))
                     color = colors.popleft()
                     colors.append(color)
@@ -153,7 +156,7 @@ def show_help():
     [-c] 清空数据库
     [-v] 获取单词发音, 单独使用 yd -v 可以获取上一个查询单词的发音
     [-d word] 删除数据库中某个单词
-    [-y] 优先使用stardict词典
+    [-y] 优先使用有道词典
     [-s path] 设置stardict词典路径
     [--help] 显示帮助信息
     """.format(ver=config.VERSION))
@@ -195,6 +198,7 @@ def main():
             sys.exit()
         elif opt[0] == '-y':
             use_dict = False
+            use_db = False
 
     keyword = unicode(' '.join(args), encoding=sys.getfilesystemencoding())
 

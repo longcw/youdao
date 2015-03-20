@@ -147,13 +147,13 @@ class _StarDictIdx(object):
         
         @note: here may be placed flexible search realization
         """
-        word = word.encode("utf-8")
+        # word = word.encode("utf-8")
         idx = CPyStarDictIndex.getIndex(word, self.idx_offset_bytes_size, self.idx_filename)
         if idx[2]:
             import socket
-            return socket.htonl(idx[1]), socket.htonl(idx[2])
+            return socket.htonl(idx[1] & 0xffffffffL), socket.htonl(idx[2] & 0xffffffffL)
         else:
-            return 0, 0
+            raise KeyError('%s not found' % word)
     
     def __contains__(self, k):
         """
