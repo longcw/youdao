@@ -3,7 +3,6 @@
 import os
 import errno
 import cPickle
-from peewee import SqliteDatabase
 
 
 VERSION = '0.3.0'

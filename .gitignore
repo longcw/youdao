@@ -2,4 +2,5 @@
 dist
 build
 youdao.egg-info
+env
 *.pyc

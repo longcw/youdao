@@ -3,7 +3,7 @@
 这是一个基于Python 在控制台下查单词的小工具。
 这个小程序是受<https://github.com/Flowerowl/ici> 启发， 用requests 库和有道的API 重新实现的，后期加上了数据库、有道Web版、有道翻译、单词发音、Stardict 的支持。
 
-__从0.3.0开始添加了对Stardict 的支持。__默认情况下使用Stardict查询单词，如果没有找到则使用web版有道词典。
+__从0.3.0开始添加了对Stardict 的支持__（使用pystardict + C扩展加快查询速度）。默认情况下使用Stardict查询单词，如果没有找到则使用web版有道词典。
 另外，它还支持__单词发音__（须要联网从有道获取，会缓存已经获取的mp3文件）；支持__有道翻译__，支持使用有道API查词；自动使用sqlite 数据库保存已经查询过的单词数据。
 
 ###使用说明
@@ -49,9 +49,17 @@ __从0.3.0开始添加了对Stardict 的支持。__默认情况下使用Stardict
     [--help] 显示帮助信息```
     
 ###安装
++ Ubuntu（Linux）：
 `sudo python setup.py install`
 或者
 `sudo pip install youdao`
+
++ Windows：
+由于Windows 下控制台下的编码问题，推荐使用[cmder](http://gooseberrycreative.com/cmder/)，并在`cmder/vendor/init.bat` 的最后加上
+```
+@chcp 65001 > nul
+@set PYTHONIOENCODING=utf-8```
+安装过程中可能须要vc 或gcc
 
 ###更新历史
 + 0.3.0 增加对stardict 的支持，使用[pystardict](https://github.com/lig/pystardict)，为加速查询编写了查询索引部分的C 扩展
