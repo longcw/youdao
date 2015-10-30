@@ -68,7 +68,7 @@ class YoudaoSpider:
         :param html:网页内容
         :return:result
         """
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, "lxml")
         root = soup.find(id='results-contents')
 
         # query 搜索的关键字
