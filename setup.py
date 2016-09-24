@@ -16,7 +16,7 @@ setup(name='youdao',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'termcolor', 'requests', 'beautifulsoup4', 'peewee'
+          'termcolor', 'requests', 'beautifulsoup4', 'peewee', 'lxml'
       ],
       classifiers=[
           'Programming Language :: Python :: 2',
