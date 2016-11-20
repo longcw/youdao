@@ -7,7 +7,6 @@ import getopt
 import requests
 import json
 import webbrowser
-import random
 from collections import deque
 from termcolor import colored
 from spider import YoudaoSpider
@@ -193,8 +192,11 @@ def main():
         elif opt[0] == '-v':
             play_voice = True
         elif opt[0] == '-s':
-            print u'stardict 路径设置成功：', opt[1]
-            config.set_dict_path(opt[1])
+            if os.path.isdir(opt[1]):
+                print u'stardict 路径设置成功：', opt[1]
+                config.set_dict_path(opt[1])
+            else:
+                print u'stardict 路径设置失败. 原因可能是路径"%s"不存在.' % opt[1]
             sys.exit()
         elif opt[0] == '-y':
             use_dict = False
