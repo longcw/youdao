@@ -25,7 +25,7 @@ class YoudaoSpider:
     }
     api_url = u'http://fanyi.youdao.com/openapi.do'
     voice_url = u'http://dict.youdao.com/dictvoice?type=2&audio={word}'
-    web_url = u'http://dict.youdao.com/search?keyfrom=dict.top&q='
+    web_url = u'http://dict.youdao.com/w/eng/class/#keyfrom=dict2.index'
     translation_url = u'http://fanyi.youdao.com/translate?keyfrom=dict.top&i='
 
     error_code = {
