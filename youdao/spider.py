@@ -25,7 +25,7 @@ class YoudaoSpider:
     }
     api_url = u'http://fanyi.youdao.com/openapi.do'
     voice_url = u'http://dict.youdao.com/dictvoice?type=2&audio={word}'
-    web_url = u'http://dict.youdao.com/search?keyfrom=dict.top&q='
+    web_url = u'http://dict.youdao.com/w/eng/{0}/#keyfrom=dict2.index'
     translation_url = u'http://fanyi.youdao.com/translate?keyfrom=dict.top&i='
 
     error_code = {
@@ -57,7 +57,7 @@ class YoudaoSpider:
             r.raise_for_status()    # a 4XX client error or 5XX server error response
             self.result = r.json()
         else:
-            r = requests.get(self.web_url + self.word)
+            r = requests.get(self.web_url.format(self.word)
             r.raise_for_status()
             self.parse_html(r.text)
         return self.result
