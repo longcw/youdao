@@ -5,7 +5,7 @@ import errno
 import cPickle
 
 
-VERSION = '0.3.1'
+VERSION = '0.3.2'
 HOME = os.path.expanduser("~")
 BASE_DIR = os.path.join(HOME, '.dict_youdao')   # 用户数据根目录
 VOICE_DIR = os.path.join(BASE_DIR, 'voice')     # 音频文件

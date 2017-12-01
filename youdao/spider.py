@@ -54,10 +54,10 @@ class YoudaoSpider:
         if use_api:
             self.params['q'] = self.word
             r = requests.get(self.api_url, params=self.params)
-            r.raise_for_status()    # a 4XX client error or 5XX server error response
+            r.raise_for_status()  # a 4XX client error or 5XX server error response
             self.result = r.json()
         else:
-            r = requests.get(self.web_url.format(self.word)
+            r = requests.get(self.web_url.format(self.word))
             r.raise_for_status()
             self.parse_html(r.text)
         return self.result
@@ -118,7 +118,7 @@ class YoudaoSpider:
         :param word:str 关键字
         :return:list 翻译结果
         """
-        r = requests.get(self.translation_url+word)
+        r = requests.get(self.translation_url + word)
         if r.status_code != requests.codes.ok:
             return None
 
@@ -129,14 +129,12 @@ class YoudaoSpider:
 
     @classmethod
     def get_voice(cls, word):
-        voice_file = os.path.join(VOICE_DIR, word+'.mp3')
+        voice_file = os.path.join(VOICE_DIR, word + '.mp3')
         if not os.path.isfile(voice_file):
             r = requests.get(cls.voice_url.format(word=word))
             with open(voice_file, 'wb') as f:
                 f.write(r.content)
         return voice_file
-
-
 
 
 if __name__ == '__main__':
