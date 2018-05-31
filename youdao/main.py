@@ -147,7 +147,7 @@ def parse_args():
     parser.add_argument('-l', '--list', action='store_true', help='列出本地保存的所有单词')
     parser.add_argument('-c', '--clean', action='store_true', help='清空本地数据库')
     parser.add_argument('-v', '--voice', action='store_true', help='获取单词发音')
-    parser.add_argument('-d', '--delete', dest='delete', type=str, default='', help='删除本地单词')
+    parser.add_argument('-d', '--delete', action='store_true', help='删除本地单词')
     parser.add_argument('-s', '--stardict', dest='stardict', type=str, default='', help='设置stardict词典路径')
 
     args = parser.parse_args()
