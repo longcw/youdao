@@ -1,10 +1,10 @@
 # coding:utf-8
 
 import re
-import json
+import sys
 import os
 import requests
-import webbrowser
+from requests.exceptions import RequestException
 from termcolor import colored
 from bs4 import BeautifulSoup
 from config import VOICE_DIR
@@ -26,7 +26,6 @@ class YoudaoSpider:
     api_url = u'http://fanyi.youdao.com/openapi.do'
     voice_url = u'http://dict.youdao.com/dictvoice?type=2&audio={word}'
     web_url = u'http://dict.youdao.com/w/eng/{0}/#keyfrom=dict2.index'
-    translation_url = u'http://fanyi.youdao.com/translate?keyfrom=dict.top&i='
 
     error_code = {
         0: u'正常',
@@ -51,15 +50,19 @@ class YoudaoSpider:
         :param use_api:是否使用有道API, 否则解析web版有道获取结果
         :return:与有道API返回的json数据一致的dict
         """
-        if use_api:
-            self.params['q'] = self.word
-            r = requests.get(self.api_url, params=self.params)
-            r.raise_for_status()  # a 4XX client error or 5XX server error response
-            self.result = r.json()
-        else:
-            r = requests.get(self.web_url.format(self.word))
-            r.raise_for_status()
-            self.parse_html(r.text)
+        try:
+            if use_api:
+                self.params['q'] = self.word
+                r = requests.get(self.api_url, params=self.params)
+                r.raise_for_status()  # a 4XX client error or 5XX server error response
+                self.result = r.json()
+            else:
+                r = requests.get(self.web_url.format(self.word))
+                r.raise_for_status()
+                self.parse_html(r.text)
+        except RequestException as e:
+            print colored(u'网络错误: %s' % e.message, 'red')
+            sys.exit()
         return self.result
 
     def parse_html(self, html):
@@ -98,9 +101,9 @@ class YoudaoSpider:
                 elif len(phons) == 1:
                     self.result['basic']['phonetic'] = unicode(phons[0].string)[1:-1]
 
-        # 翻译
-        if 'basic' not in self.result:
-            self.result['translation'] = self.get_translation(self.word)
+        # # 翻译
+        # if 'basic' not in self.result:
+        #     self.result['translation'] = self.get_translation(self.word)
 
         # 网络释义(短语)
         web = root.find(id='webPhrase')
@@ -111,21 +114,6 @@ class YoudaoSpider:
                     'value': [v.strip() for v in unicode(wordgroup.find('span').next_sibling).split(';')]
                 } for wordgroup in web.find_all(class_='wordGroup', limit=4)
             ]
-
-    def get_translation(self, word):
-        """
-        通过web版有道翻译抓取翻译结果
-        :param word:str 关键字
-        :return:list 翻译结果
-        """
-        r = requests.get(self.translation_url + word)
-        if r.status_code != requests.codes.ok:
-            return None
-
-        pattern = re.compile(r'"translateResult":\[(\[.+\])\]')
-        m = pattern.search(r.text)
-        result = json.loads(m.group(1))
-        return [item['tgt'] for item in result]
 
     @classmethod
     def get_voice(cls, word):
