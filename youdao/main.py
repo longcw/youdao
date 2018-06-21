@@ -155,6 +155,9 @@ def parse_args():
 
 
 def main():
+    # resolve issue #9
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
     args = parse_args()
     config.prepare()
 
