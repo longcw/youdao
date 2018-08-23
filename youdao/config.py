@@ -37,7 +37,8 @@ def update():
     if config.get('version', '0') < '0.2.0':
         # silent_remove(DB_DIR)
         from model import db, Word
-        db.drop_table(Word, fail_silently=True)
+        if os.path.exists(DB_DIR):
+            db.drop_table(Word, fail_silently=True)
         Word.create_table()
 
 
