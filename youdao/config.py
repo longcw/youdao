@@ -5,7 +5,7 @@ import errno
 import cPickle
 
 
-VERSION = '0.3.3'
+VERSION = '0.3.4'
 HOME = os.path.expanduser("~")
 BASE_DIR = os.path.join(HOME, '.dict_youdao')   # 用户数据根目录
 VOICE_DIR = os.path.join(BASE_DIR, 'voice')     # 音频文件
@@ -37,8 +37,10 @@ def update():
     if config.get('version', '0') < '0.2.0':
         # silent_remove(DB_DIR)
         from model import db, Word
-        if os.path.exists(DB_DIR):
+        try:
             db.drop_table(Word, fail_silently=True)
+        except AttributeError:
+            pass
         Word.create_table()
 
 
