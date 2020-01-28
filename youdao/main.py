@@ -9,9 +9,9 @@ import json
 import webbrowser
 from collections import deque
 from termcolor import colored
-from spider import YoudaoSpider
-from model import Word
-import config
+from youdao.spider import YoudaoSpider
+from youdao.model import Word
+from youdao import config
 
 
 def show_result(result):
@@ -20,33 +20,33 @@ def show_result(result):
     :param result: 与有道API返回的json 数据结构一致的dict
     """
     if 'stardict' in result:
-        print colored(u'StarDict:', 'blue')
-        print result['stardict']
+        print(colored(u'StarDict:', 'blue'))
+        print(result['stardict'])
         return
 
     if result['errorCode'] != 0:
-        print colored(YoudaoSpider.error_code[result['errorCode']], 'red')
+        print(colored(YoudaoSpider.error_code[result['errorCode']], 'red'))
     else:
-        print colored('[%s]' % result['query'], 'magenta')
+        print(colored('[%s]' % result['query'], 'magenta'))
         if 'basic' in result:
             if 'us-phonetic' in result['basic']:
-                print colored(u'美音:', 'blue'), colored('[%s]' % result['basic']['us-phonetic'], 'green'),
+                print(colored(u'美音:', 'blue'), colored('[%s]' % result['basic']['us-phonetic'], 'green'))
             if 'uk-phonetic' in result['basic']:
-                print colored(u'英音:', 'blue'), colored('[%s]' % result['basic']['uk-phonetic'], 'green')
+                print(colored(u'英音:', 'blue'), colored('[%s]' % result['basic']['uk-phonetic'], 'green'))
             if 'phonetic' in result['basic']:
-                print colored(u'拼音:', 'blue'), colored('[%s]' % result['basic']['phonetic'], 'green')
+                print(colored(u'拼音:', 'blue'), colored('[%s]' % result['basic']['phonetic'], 'green'))
 
-            print colored(u'基本词典:', 'blue')
-            print colored('\t'+'\n\t'.join(result['basic']['explains']), 'yellow')
+            print(colored(u'基本词典:', 'blue'))
+            print(colored('\t'+'\n\t'.join(result['basic']['explains']), 'yellow'))
 
         if 'translation' in result:
-            print colored(u'有道翻译:', 'blue')
-            print colored('\t'+'\n\t'.join(result['translation']), 'cyan')
+            print(colored(u'有道翻译:', 'blue'))
+            print(colored('\t'+'\n\t'.join(result['translation']), 'cyan'))
 
         if 'web' in result:
-            print colored(u'网络释义:', 'blue')
+            print(colored(u'网络释义:', 'blue'))
             for item in result['web']:
-                print '\t' + colored(item['key'], 'cyan') + ': ' + '; '.join(item['value'])
+                print('\t' + colored(item['key'], 'cyan') + ': ' + '; '.join(item['value']))
 
 
 def play(voice_file):
@@ -118,9 +118,9 @@ def query(keyword, use_db=True,  use_dict=True, play_voice=False):
 
 
 def show_db_list():
-    print colored(u'保存在数据库中的单词及查询次数:', 'blue')
+    print(colored(u'保存在数据库中的单词及查询次数:', 'blue'))
     for word in Word.select():
-        print colored(word.keyword, 'cyan'), colored(str(word.count), 'green')
+        print(colored(word.keyword, 'cyan'), colored(str(word.count), 'green'))
 
 
 def del_word(keyword):
@@ -155,9 +155,6 @@ def parse_args():
 
 
 def main():
-    # resolve issue #9
-    reload(sys)
-    sys.setdefaultencoding('utf-8')
     args = parse_args()
     config.prepare()
 
@@ -178,7 +175,7 @@ def main():
         return
 
     if len(args.word) > 0:
-        keyword = unicode(' '.join(args.word), encoding=sys.getfilesystemencoding())
+        keyword = ' '.join(args.word)
     else:
         word = Word.get_last_word()
         keyword = word.keyword

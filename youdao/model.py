@@ -2,7 +2,7 @@
 
 import datetime
 from peewee import *
-from config import DB_DIR
+from youdao.config import DB_DIR
 
 
 db = SqliteDatabase(DB_DIR)

@@ -2,7 +2,7 @@
 
 import os
 import errno
-import cPickle
+import pickle
 
 
 VERSION = '0.3.4'
@@ -21,14 +21,14 @@ config = {'version': '0'}
 def silent_remove(filename):
     try:
         os.remove(filename)
-    except OSError, e:
+    except OSError as e:
         if e.errno != errno.ENOENT:
             raise
 
 
 def save_config():
     with open(PK_DIR, 'wb') as f:
-        cPickle.dump(config, f)
+        pickle.dump(config, f)
 
 
 def update():
@@ -36,7 +36,7 @@ def update():
     # 重新设置数据库
     if config.get('version', '0') < '0.2.0':
         # silent_remove(DB_DIR)
-        from model import db, Word
+        from youdao.model import db, Word
         try:
             db.drop_table(Word, fail_silently=True)
         except AttributeError:
@@ -53,7 +53,7 @@ def prepare():
     if os.path.isfile(PK_DIR):
         with open(PK_DIR, 'rb') as f:
             global config
-            config = cPickle.load(f)
+            config = pickle.load(f)
     # update
     update()
     if config.get('version', '0') < VERSION:

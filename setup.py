@@ -18,15 +18,15 @@ setup(name='youdao',
       install_requires=[
           'termcolor', 'requests', 'beautifulsoup4', 'peewee', 'lxml'
       ],
-      classifiers=[
-          'Programming Language :: Python :: 2',
-          'Programming Language :: Python :: 2.6',
-          'Programming Language :: Python :: 2.7',
-      ],
+      # classifiers=[
+      #     'Programming Language :: Python :: 2',
+      #     'Programming Language :: Python :: 2.6',
+      #     'Programming Language :: Python :: 2.7',
+      # ],
       entry_points={
           'console_scripts': [
               'yd = youdao.main:main',
           ]
       },
-      ext_modules=[Extension('youdao/lib/CPyStarDictIndex', sources=['youdao/lib/CPyStarDictIndex.cpp'])]
+      # ext_modules=[Extension('youdao/lib/CPyStarDictIndex', sources=['youdao/lib/CPyStarDictIndex.cpp'])]
 )

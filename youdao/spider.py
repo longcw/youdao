@@ -1,13 +1,12 @@
 # coding:utf-8
 
-import re
 import sys
 import os
 import requests
 from requests.exceptions import RequestException
 from termcolor import colored
 from bs4 import BeautifulSoup
-from config import VOICE_DIR
+from youdao.config import VOICE_DIR
 
 
 class YoudaoSpider:
@@ -61,7 +60,7 @@ class YoudaoSpider:
                 r.raise_for_status()
                 self.parse_html(r.text)
         except RequestException as e:
-            print colored(u'网络错误: %s' % e.message, 'red')
+            print(colored(u'网络错误: %s' % e.message, 'red'))
             sys.exit()
         return self.result
 
@@ -79,7 +78,7 @@ class YoudaoSpider:
         if not keyword:
             self.result['query'] = self.word
         else:
-            self.result['query'] = unicode(keyword.string)
+            self.result['query'] = keyword.string
 
         # 基本解释
         basic = root.find(id='phrsListTab')
@@ -87,7 +86,7 @@ class YoudaoSpider:
             trans = basic.find(class_='trans-container')
             if trans:
                 self.result['basic'] = {}
-                self.result['basic']['explains'] = [unicode(tran.string) for tran in trans.find_all('li')]
+                self.result['basic']['explains'] = [tran.string for tran in trans.find_all('li')]
                 # 中文
                 if len(self.result['basic']['explains']) == 0:
                     exp = trans.find(class_='wordGroup').stripped_strings
@@ -97,9 +96,9 @@ class YoudaoSpider:
                 phons = basic(class_='phonetic', limit=2)
                 if len(phons) == 2:
                     self.result['basic']['uk-phonetic'], self.result['basic']['us-phonetic'] = \
-                        [unicode(p.string)[1:-1] for p in phons]
+                        [p.string[1:-1] for p in phons]
                 elif len(phons) == 1:
-                    self.result['basic']['phonetic'] = unicode(phons[0].string)[1:-1]
+                    self.result['basic']['phonetic'] = phons[0].string[1:-1]
 
         # # 翻译
         # if 'basic' not in self.result:
@@ -110,8 +109,8 @@ class YoudaoSpider:
         if web:
             self.result['web'] = [
                 {
-                    'key': unicode(wordgroup.find(class_='search-js').string).strip(),
-                    'value': [v.strip() for v in unicode(wordgroup.find('span').next_sibling).split(';')]
+                    'key': wordgroup.find(class_='search-js').string.strip(),
+                    'value': [v.strip() for v in wordgroup.find('span').next_sibling.split(';')]
                 } for wordgroup in web.find_all(class_='wordGroup', limit=4)
             ]
 
@@ -127,4 +126,4 @@ class YoudaoSpider:
 
 if __name__ == '__main__':
     test = YoudaoSpider('application')
-    print test.get_result()
+    print(test.get_result())
