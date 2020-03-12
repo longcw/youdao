@@ -123,4 +123,14 @@ if __name__ == "__main__":
             'yd = youdao.main:main',
         ]},
         ext_modules=ext_modules,
-        cmdclass={'build_ext': BuildExt})
+        cmdclass={'build_ext': BuildExt},
+        classifiers=[
+            'Programming Language :: Python :: 2.7',
+            'Programming Language :: Python :: 3',
+            'Programming Language :: Python :: 3.2',
+            'Programming Language :: Python :: 3.3',
+            'Programming Language :: Python :: 3.4',
+            'Programming Language :: Python :: 3.5',
+            'Programming Language :: Python :: 3.6'
+        ],
+    )
