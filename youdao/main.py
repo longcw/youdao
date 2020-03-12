@@ -89,7 +89,7 @@ def query(keyword, use_db=True,  use_dict=True, play_voice=False):
                 except KeyError:
                     pass
                 else:
-                    dic_exp = unicode(dic_exp.decode('utf-8'))
+                    dic_exp = dic_exp.decode('utf-8')
                     stardict_trans.append(colored(u"[{dic}]:{word}".format(dic=name, word=keyword), 'green'))
                     color = colors.popleft()
                     colors.append(color)

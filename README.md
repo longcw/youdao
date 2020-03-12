@@ -64,6 +64,7 @@ yd [-a] [-n] [-l] [-c] [-v] [-d word] [-y] [-s path] [--help] word
 
 
 ### 更新历史
++ 0.3.6 upload to python3 and use pybind11 for the stardict lib
 + 0.3.1 bug fixed
 + 0.3.0 增加对stardict 的支持，使用[pystardict](https://github.com/lig/pystardict)，为加速查询编写了查询索引部分的C 扩展
 + 0.2.3 修复了使用api无法显示新单词结果的问题
