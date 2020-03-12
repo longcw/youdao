@@ -1,0 +1,7 @@
+termcolor
+requests
+beautifulsoup4
+peewee
+lxml
+pybind11
+cppimport

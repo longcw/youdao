@@ -12,6 +12,7 @@ from termcolor import colored
 from youdao.spider import YoudaoSpider
 from youdao.model import Word
 from youdao import config
+from youdao.lib.cpystardict import Dictionary
 
 
 def show_result(result):
@@ -70,11 +71,11 @@ def query(keyword, use_db=True,  use_dict=True, play_voice=False):
         update_word[0] = False
     elif update_word[0]:
         # 从starditc中查找
-        if use_dict and config.config.get('stardict'):
-            try:
-                from lib.cpystardict import Dictionary
-            except ImportError:
-                from lib.pystardict import Dictionary
+        if use_dict and config.config.get('stardict'):            
+            # try:
+            #     from youdao.lib.cpystardict import Dictionary
+            # except ImportError:
+            #     from youdao.lib.pystardict import Dictionary
             colors = deque(['cyan', 'yellow', 'blue'])
             stardict_base = config.config.get('stardict')
             stardict_trans = []

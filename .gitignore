@@ -6,3 +6,8 @@ env
 *.pyc
 .vscode
 .vscode-upload.json
+build
+*.so
+.rendered.*
+*.cppimporthash
+tmp

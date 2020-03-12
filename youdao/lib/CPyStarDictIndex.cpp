@@ -1,29 +1,22 @@
-//
-// Created by chenlong on 15-3-19.
-//
+/*
+<%
+setup_pybind11(cfg)
+%>
+*/
+#include "pybind11/pybind11.h"
+#include <tuple>
+#include <string>
+#include <cstdint>
 
-#ifdef _MSC_VER
+using std::string;
+using std::tuple;
 
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
+tuple<string, uint64_t, uint64_t> getIndex(
+    const string &word, 
+    const int &index_offset_bytes_size, 
+    const string &idx) {
 
-#else
-#include <stdint.h>
-#endif
-
-#include "Python.h"
-
-static PyObject *getIndex(PyObject *self, PyObject *args) {
-    char *idx;
-    char *word;
-    int index_offset_bytes_size;
-    if(!PyArg_ParseTuple(args, "sis", &word, &index_offset_bytes_size, &idx)) {
-        return NULL;
-    }
-
-    FILE *fp = fopen(idx, "rb");
+    FILE *fp = fopen(idx.c_str(), "rb");
 
     char name[512];
     int name_ix = 0;
@@ -41,10 +34,9 @@ static PyObject *getIndex(PyObject *self, PyObject *args) {
             fread(&length, 4, 1, fp);
 
             // matched
-            if(strcmp(name, word) == 0) {
-
+            if(strcmp(name, word.c_str()) == 0) {
                 fclose(fp);
-                return Py_BuildValue("sLL", name, offset, length);
+                return std::make_tuple(string(name), offset, length);
             }
 
             // re-initialize
@@ -53,14 +45,10 @@ static PyObject *getIndex(PyObject *self, PyObject *args) {
         }
     }
     fclose(fp);
-    return Py_BuildValue("sss", word, NULL, NULL);
+    return std::make_tuple(word, 0, 0);
 }
 
-static PyMethodDef pycFuncs[] = {
-        {"getIndex", (PyCFunction)getIndex, METH_VARARGS, "get the index of stardict"},
-        {NULL}
-};
 
-extern "C" void initCPyStarDictIndex(void) {
-    Py_InitModule("CPyStarDictIndex", pycFuncs);
+PYBIND11_MODULE(CPyStarDictIndex, m) {
+    m.def("getIndex", &getIndex);
 }

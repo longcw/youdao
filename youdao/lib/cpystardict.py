@@ -21,7 +21,9 @@ along with PyStarDict.  If not, see <http://www.gnu.org/licenses/>.
 """
 import gzip
 import warnings
-import CPyStarDictIndex
+from . import CPyStarDictIndex
+# import cppimport
+# CPyStarDictIndex = cppimport.imp("youdao.lib.CPyStarDictIndex")
 
 
 class _StarDictIfo(object):
@@ -62,63 +64,64 @@ class _StarDictIfo(object):
     sametypesequence= // very important.
     """
     def __init__(self, dict_prefix, container):
-        
+
         ifo_filename = '%s.ifo' % dict_prefix
-        
+
         try:
             _file = open(ifo_filename)
         except IOError:
             raise Exception('.ifo file does not exists')
-        
+
         # skipping ifo header
         _file.readline()
-        
+
         _line = _file.readline().split('=')
         if _line[0] == 'version':
             self.version = _line[1]
         else:
             raise Exception('ifo has invalid format')
-        
+
         _config = {}
         for _line in _file:
             _line_splited = _line.split('=')
             _config[_line_splited[0]] = _line_splited[1]
         _file.close()
-        
+
         self.bookname = _config.get('bookname', None).strip()
         if self.bookname is None: raise Exception('ifo has no bookname')
-        
+
         self.wordcount = _config.get('wordcount', None)
         if self.wordcount is None: raise Exception('ifo has no wordcount')
         self.wordcount = int(self.wordcount)
-        
+
         if self.version == '3.0.0':
             try:
                 #_syn = open('%s.syn' % dict_prefix)    # not used
                 self.synwordcount = _config.get('synwordcount', None)
                 if self.synwordcount is None:
-                    raise Exception('ifo has no synwordcount but .syn file exists')
+                    raise Exception(
+                        'ifo has no synwordcount but .syn file exists')
                 self.synwordcount = int(self.synwordcount)
             except IOError:
                 pass
-        
+
         self.idxfilesize = _config.get('idxfilesize', None)
         if self.idxfilesize is None: raise Exception('ifo has no idxfilesize')
         self.idxfilesize = int(self.idxfilesize)
-        
+
         self.idxoffsetbits = _config.get('idxoffsetbits', 32)
         self.idxoffsetbits = int(self.idxoffsetbits)
-        
+
         self.author = _config.get('author', '').strip()
-        
+
         self.email = _config.get('email', '').strip()
-        
+
         self.website = _config.get('website', '').strip()
-        
+
         self.description = _config.get('description', '').strip()
-        
+
         self.date = _config.get('date', '').strip()
-        
+
         self.sametypesequence = _config.get('sametypesequence', '').strip()
 
 
@@ -133,14 +136,13 @@ class _StarDictIdx(object):
          word_data_offset;  // word data's offset in .dict file
          word_data_size;  // word data's total size in .dict file 
     """
-    
     def __init__(self, dict_prefix, container):
         self._container = container
 
         self.idx_filename = '%s.idx' % dict_prefix
 
         self.idx_offset_bytes_size = int(container.ifo.idxoffsetbits / 8)
-    
+
     def __getitem__(self, word):
         """
         returns tuple (word_data_offset, word_data_size,) for word in .dict
@@ -148,26 +150,29 @@ class _StarDictIdx(object):
         @note: here may be placed flexible search realization
         """
         # word = word.encode("utf-8")
-        idx = CPyStarDictIndex.getIndex(word, self.idx_offset_bytes_size, self.idx_filename)
+        idx = CPyStarDictIndex.getIndex(word, self.idx_offset_bytes_size,
+                                        self.idx_filename)
         if idx[2]:
             import socket
-            return socket.htonl(idx[1] & 0xffffffffL), socket.htonl(idx[2] & 0xffffffffL)
+            return socket.htonl(idx[1]
+                                & 0xffffffff), socket.htonl(idx[2]
+                                                            & 0xffffffff)
         else:
             raise KeyError('%s not found' % word)
-    
+
     def __contains__(self, k):
         """
         returns True if index has a word k, else False
         """
         idx = self.__getitem__(k)
         return idx[1] != 0
-    
+
     def __eq__(self, y):
         """
         :raises NotImplementedError
         """
         raise NotImplementedError()
-    
+
     def __ne__(self, y):
         """
         :raises NotImplementedError
@@ -179,7 +184,9 @@ class _StarDictIdx(object):
         returns iterkeys
         """
         if not self._container.in_memory:
-            warnings.warn('Iter dict items with in_memory=False may cause serious performance problem')
+            warnings.warn(
+                'Iter dict items with in_memory=False may cause serious performance problem'
+            )
         return self._idx.iterkeys()
 
     def keys(self):
@@ -187,8 +194,11 @@ class _StarDictIdx(object):
         returns keys
         """
         if not self._container.in_memory:
-            warnings.warn('Iter dict items with in_memory=False may cause serious performance problem')
+            warnings.warn(
+                'Iter dict items with in_memory=False may cause serious performance problem'
+            )
         return self._idx.keys()
+
 
 class _StarDictDict(object):
     """
@@ -324,7 +334,6 @@ class _StarDictDict(object):
     this type identifier is reserved for experimental extensions.
 
     """
-    
     def __init__(self, dict_prefix, container, in_memory=False):
         """
         opens regular or dziped .dict file
@@ -333,7 +342,7 @@ class _StarDictDict(object):
         """
         self._container = container
         self._in_memory = in_memory
-        
+
         dict_filename = '%s.dict' % dict_prefix
         dict_filename_dz = '%s.dz' % dict_filename
 
@@ -349,37 +358,38 @@ class _StarDictDict(object):
                 self._file = open_file(dict_filename, dict_filename_dz)
             except:
                 raise Exception('.dict file does not exists')
-    
+
     def __getitem__(self, word):
         """
         returns data from .dict for word
         """
-        
+
         # getting word data coordinates
         cords = self._container.idx[word]
 
         if self._in_memory:
-            bytes = self._file[cords[0]: cords[0]+cords[1]]
+            bytes = self._file[cords[0]:cords[0] + cords[1]]
         else:
             # seeking in file for data
             self._file.seek(cords[0])
 
             # reading data
             bytes = self._file.read(cords[1])
-        
+
         return bytes
 
+
 class _StarDictSyn(object):
-    
     def __init__(self, dict_prefix, container):
-        
+
         syn_filename = '%s.syn' % dict_prefix
-       
+
         try:
             self._file = open(syn_filename)
         except IOError:
             # syn file is optional, passing silently
             pass
+
 
 class Dictionary(dict):
     """
@@ -398,7 +408,6 @@ class Dictionary(dict):
     in further impleneted methods:
     
     """
-    
     def __init__(self, filename_prefix, in_memory=False):
         """
         filename_prefix: path to dictionary files without files extensions
@@ -408,52 +417,54 @@ class Dictionary(dict):
         """
 
         self.in_memory = in_memory
-        
+
         # reading somedict.ifo
         self.ifo = _StarDictIfo(dict_prefix=filename_prefix, container=self)
-        
+
         # reading somedict.idx or somedict.idx.gz
         self.idx = _StarDictIdx(dict_prefix=filename_prefix, container=self)
-        
+
         # reading somedict.dict or somedict.dict.dz
-        self.dict = _StarDictDict(dict_prefix=filename_prefix, container=self, in_memory=in_memory)
-        
+        self.dict = _StarDictDict(dict_prefix=filename_prefix,
+                                  container=self,
+                                  in_memory=in_memory)
+
         # reading somedict.syn (optional)
         self.syn = _StarDictSyn(dict_prefix=filename_prefix, container=self)
-        
+
         # initializing cache
         self._dict_cache = {}
-    
+
     def __cmp__(self, y):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def __contains__(self, k):
         """
         returns True if x.idx has a word k, else False
         """
         return k in self.idx
-    
+
     def __delitem__(self, k):
         """
         frees cache from word k translation
         """
         del self._dict_cache[k]
-    
+
     def __eq__(self, y):
         """
         returns True if hashlib.md5(x.idx) is equal to hashlib.md5(y.idx), else False
         """
         return self.idx.__eq__(y.idx)
-    
+
     def __ge__(self, y):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def __getitem__(self, k):
         """
         returns translation for word k from cache or not and then caches
@@ -464,61 +475,61 @@ class Dictionary(dict):
             value = self.dict[k]
             self._dict_cache[k] = value
             return value
-    
+
     def __gt__(self, y):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def __iter__(self):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def __le__(self):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def __len__(self):
         """
         returns number of words provided by wordcount parameter of the x.ifo
         """
         return self.ifo.wordcount
-    
+
     def __lt__(self):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def __ne__(self, y):
         """
         returns True if hashlib.md5(x.idx) is not equal to hashlib.md5(y.idx), else False
         """
         return not self.__eq__(y)
-    
+
     def __repr__(self):
         """
         returns classname and bookname parameter of the x.ifo
         """
         return u'%s %s' % (self.__class__, self.ifo.bookname)
-    
+
     def __setitem__(self, k, v):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def clear(self):
         """
         clear dict cache 
         """
         self._dict_cache = dict()
-    
+
     def get(self, k, d=''):
         """
         returns translation of the word k from self.dict or d if k not in x.idx
@@ -526,66 +537,70 @@ class Dictionary(dict):
         d defaults to empty string
         """
         return k in self and self[k] or d
-    
+
     def has_key(self, k):
         """
         returns True if self.idx has a word k, else False
         """
         return k in self
-    
+
     def items(self):
         """
         returns items
         """
         if not self.in_memory:
-            warnings.warn('Iter dict items with in_memory=False may cause serious performance problem')
+            warnings.warn(
+                'Iter dict items with in_memory=False may cause serious performance problem'
+            )
         return [(key, self[key]) for key in self.iterkeys()]
-    
+
     def iteritems(self):
         """
         returns iteritems
         """
         if not self.in_memory:
-            warnings.warn('Iter dict items with in_memory=False may cause serious performance problem')
+            warnings.warn(
+                'Iter dict items with in_memory=False may cause serious performance problem'
+            )
         for key in self.iterkeys():
             yield (key, self[key])
-    
+
     def itervalues(self):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def pop(self, k, d):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def popitem(self):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def setdefault(self, k, d):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def update(self, E, **F):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def values(self):
         """
         raises NotImplemented exception
         """
         raise NotImplementedError()
-    
+
     def fromkeys(self, S, v=None):
         """
         raises NotImplemented exception
@@ -609,8 +624,11 @@ def open_file(regular, gz):
 
 def main():
     import os
-    dic = Dictionary(os.path.join('/home/chenlong/goldendic/stardict-langdao-ec-gb-2.4.2', 'langdao-ec-gb'))
-    print dic['a']
+    dic = Dictionary(
+        os.path.join('/home/chenlong/goldendic/stardict-langdao-ec-gb-2.4.2',
+                     'langdao-ec-gb'))
+    print(dic['a'])
+
 
 if __name__ == '__main__':
     main()
