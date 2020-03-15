@@ -76,3 +76,7 @@ yd [-a] [-n] [-l] [-c] [-v] [-d word] [-y] [-s path] [--help] word
 + 0.1.2 增加抓取web版有道词典页面的方法查词, 并默认使用这种方法. 可以通过 -a 选项使用api查词.
 + 0.1.1 改变查词方法为 yd keyword
 + 0.1.0 完成基本功能, 使用命令 youdao keyword 查词.
+
+
+### 常见问题
++ Can't install on arch - unable to initialize decompress status for section: https://github.com/mrjbq7/ta-lib/issues/268#issuecomment-497979600
